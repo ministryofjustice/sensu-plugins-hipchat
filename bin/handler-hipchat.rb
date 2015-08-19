@@ -49,6 +49,20 @@ class HipChatNotif < Sensu::Handler
 
     message = @event['check']['notification'] || @event['check']['output']
 
+    # add the graph URL (if one is supplied)
+    if @event['check']['graph_url']
+      begin
+        uri = URI.parse(@event['check']['graph_url'])
+        if %w( http https ).include?(uri.scheme)
+          message << "  [<a href='#{@event['check']['graph_url']}'>Graph</a>]"
+        else
+          message << "  Graph:  #{@event['check']['graph_url']}"
+        end
+      rescue
+        message << "  Graph:  #{@event['check']['graph_url']}"
+      end
+    end
+
     # If the playbook attribute exists and is a URL, "[<a href='url'>playbook</a>]" will be output.
     # To control the link name, set the playbook value to the HTML output you would like.
     if @event['check']['playbook']
